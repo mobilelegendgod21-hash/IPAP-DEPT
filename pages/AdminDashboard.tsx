@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Product } from '../types';
 import { AdminOrders } from './AdminOrders';
+import { ConfirmationModal } from '../components/ConfirmationModal';
 
 interface AdminDashboardProps {
     setView: (view: any) => void;
@@ -12,6 +13,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
     const [loading, setLoading] = useState(true);
     const [editingProduct, setEditingProduct] = useState<Partial<Product> | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
 
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [activeTab, setActiveTab] = useState<'PRODUCTS' | 'ORDERS' | 'CUSTOMERS'>('PRODUCTS');
@@ -144,23 +146,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
             }
 
             // Handle Variants
-            // First, delete existing variants not in the new list (simplified approach: delete all and recreate, or strict upsert)
-            // Ideally: Upsert. For simplicity let's clear and re-insert or use upsert logic if we tracked variant IDs.
-            // Since we don't track variant IDs in formData easily without complexity, let's delete all for this product and re-add.
-            // CAUTION: This loses price overrides or history if not careful. But for "editing stocks", it's acceptable for MVP if sold_count is on product or carefully managed.
-            // Actually, `product_variants` ID is likely used in order_items. Deleting them might break foreign keys if ON DELETE CASCADE isn't perfect or if we want to keep history.
-            // BETTER APPROACH: upsert based on (product_id, size) if unique constraints exist.
-            // Let's assume we can delete old ones for now as per schema "ON DELETE CASCADE" on product, but here we are updating product.
-
-            // We will fetch existing variants to map IDs if needed, or just delete and insert.
-            // Given the schema:
-            // product_id TEXT REFERENCES public.products(id) ON DELETE CASCADE
-            // Let's try deleting all variants for this product and re-inserting them.
-            // Warning: Order Items reference variant_id. If we delete variant, we might break order history or cascade delete order items.
-            // Schema check: "variant_id TEXT REFERENCES public.product_variants(id)" - usually defaults to NO ACTION or RESTRICT.
-            // We should UPSERT.
-
-            // 1. Get existing variants
             const { data: existingVariants } = await supabase.from('product_variants').select('id, size').eq('product_id', productId);
 
             for (const size of formData.sizes) {
@@ -183,8 +168,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
             if (existingVariants) {
                 const toDelete = existingVariants.filter(v => !formData.sizes.includes(v.size));
                 for (const v of toDelete) {
-                    // Check if used in orders? For now just try delete (might fail if foreign key constraint)
-                    // If it fails, maybe just set stock to 0 or hide it.
                     await supabase.from('product_variants').delete().eq('id', v.id);
                 }
             }
@@ -196,9 +179,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
         }
     };
 
-    const handleLogout = async () => {
+    const handleLogoutClick = () => {
+        setIsLogoutConfirmOpen(true);
+    }
+
+    const confirmLogout = async () => {
         await supabase.auth.signOut();
         setView('HOME');
+        setIsLogoutConfirmOpen(false);
     }
 
     return (
@@ -230,7 +218,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                 </nav>
 
                 <div className="p-4 border-t border-gray-800">
-                    <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2 text-red-400 hover:text-red-300 transition-colors">
+                    <button onClick={handleLogoutClick} className="w-full flex items-center gap-3 px-4 py-2 text-red-400 hover:text-red-300 transition-colors">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                         <span className={`text-sm font-bold uppercase ${!sidebarOpen && 'hidden'}`}>Logout</span>
                     </button>
@@ -247,17 +235,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                         </button>
                         <h1 className="text-lg font-bold uppercase tracking-wide text-gray-800">Product Management</h1>
                     </div>
-                    <div className="flex items-center gap-4">
-                        <button onClick={() => setView('HOME')} className="text-sm font-bold text-gray-500 hover:text-black flex items-center gap-2">
-                            <span>Open Store</span>
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                        </button>
-                    </div>
                 </header>
 
                 <div className="p-8">
                     {/* Stats Cards - Only Separate Logic if needed, for now kept visible on all tabs or just Products/Overview */}
-                    {/* ... stats ... */}
 
                     {activeTab === 'PRODUCTS' ? (
                         <>
@@ -361,7 +342,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                 </div>
             </main >
 
-            {/* Modal - Same as before but styled specifically if needed */}
+            {/* Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={isLogoutConfirmOpen}
+                onClose={() => setIsLogoutConfirmOpen(false)}
+                onConfirm={confirmLogout}
+                title="Confirm Logout"
+                message="Are you sure you want to log out from the Admin Panel?"
+            />
+
+            {/* Modal */}
             {
                 isModalOpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

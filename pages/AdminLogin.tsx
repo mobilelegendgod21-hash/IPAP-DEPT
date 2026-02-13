@@ -10,10 +10,13 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ setView }) => {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [errorMsg, setErrorMsg] = useState('');
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
+        setErrorMsg('');
+
         try {
             const { data: { user }, error } = await supabase.auth.signInWithPassword({
                 email,
@@ -33,12 +36,17 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ setView }) => {
                 if (profile?.is_admin) {
                     setView('ADMIN_DASHBOARD');
                 } else {
-                    alert('Access Denied: You do not have administrator privileges.');
+                    setErrorMsg('Access Denied: You do not have administrator privileges.');
                     await supabase.auth.signOut();
                 }
             }
         } catch (error: any) {
-            alert(error.message);
+            console.error(error);
+            if (error.message === 'Invalid login credentials') {
+                setErrorMsg('Invalid email or password. Please try again.');
+            } else {
+                setErrorMsg(error.message || 'An error occurred during login.');
+            }
         } finally {
             setLoading(false);
         }
@@ -54,6 +62,20 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ setView }) => {
                     <p className="mt-2 text-center text-sm text-gray-600">
                         Authorized Personnel Only
                     </p>
+                    {errorMsg && (
+                        <div className="mt-4 bg-red-50 border-l-4 border-red-500 p-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <div className="flex">
+                                <div className="flex-shrink-0">
+                                    <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div className="ml-3">
+                                    <p className="text-sm text-red-700 font-bold">{errorMsg}</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
                 <form className="mt-8 space-y-6" onSubmit={handleLogin}>
                     <div className="rounded-md shadow-sm -space-y-px">
