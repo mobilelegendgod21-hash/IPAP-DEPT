@@ -17,6 +17,26 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
 
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [activeTab, setActiveTab] = useState<'PRODUCTS' | 'ORDERS' | 'CUSTOMERS'>('PRODUCTS');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 8;
+
+    // Filter Logic
+    const filteredProducts = products.filter(p =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.id.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    // Pagination Logic
+    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredProducts.slice(indexOfFirstItem, indexOfLastItem);
+
+    // Reset page when search changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery]);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -289,12 +309,18 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                             </div>
 
                             {/* Action Bar */}
-                            <div className="flex justify-between items-center mb-6">
-                                <div className="relative">
-                                    <input type="text" placeholder="Search products..." className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-black focus:border-black w-64" />
+                            <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                                <div className="relative w-full md:w-auto">
+                                    <input
+                                        type="text"
+                                        placeholder="Search products..."
+                                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-black focus:border-black w-full md:w-64"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                    />
                                     <svg className="w-4 h-4 text-gray-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                                 </div>
-                                <button onClick={openNew} className="bg-black text-white px-6 py-2 rounded-lg shadow hover:bg-gray-800 font-bold uppercase tracking-wide text-sm flex items-center gap-2">
+                                <button onClick={openNew} className="w-full md:w-auto bg-black text-white px-6 py-2 rounded-lg shadow hover:bg-gray-800 font-bold uppercase tracking-wide text-sm flex items-center justify-center gap-2">
                                     <span>+ Add Product</span>
                                 </button>
                             </div>
@@ -316,7 +342,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                                                 </tr>
                                             </thead>
                                             <tbody className="bg-white divide-y divide-gray-200">
-                                                {products.map((p) => (
+                                                {currentItems.map((p) => (
                                                     <tr key={p.id} className="hover:bg-gray-50 transition-colors">
                                                         <td className="px-6 py-4 whitespace-nowrap">
                                                             <div className="flex items-center">
@@ -353,6 +379,75 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                                     </div>
                                 )}
                             </div>
+
+                            {/* Pagination */}
+                            {totalPages > 1 && (
+                                <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4 rounded-lg shadow-sm">
+                                    <div className="flex flex-1 justify-between sm:hidden">
+                                        <button
+                                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                            disabled={currentPage === 1}
+                                            className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                                        >
+                                            Previous
+                                        </button>
+                                        <button
+                                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                            disabled={currentPage === totalPages}
+                                            className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                                        >
+                                            Next
+                                        </button>
+                                    </div>
+                                    <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                                        <div>
+                                            <p className="text-sm text-gray-700">
+                                                Showing <span className="font-bold">{indexOfFirstItem + 1}</span> to <span className="font-bold">{Math.min(indexOfLastItem, filteredProducts.length)}</span> of{' '}
+                                                <span className="font-bold">{filteredProducts.length}</span> results
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                                                <button
+                                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                                    disabled={currentPage === 1}
+                                                    className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
+                                                >
+                                                    <span className="sr-only">Previous</span>
+                                                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                        <path fillRule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clipRule="evenodd" />
+                                                    </svg>
+                                                </button>
+
+                                                {/* Page Numbers */}
+                                                {Array.from({ length: totalPages }, (_, i) => i + 1).map(number => (
+                                                    <button
+                                                        key={number}
+                                                        onClick={() => setCurrentPage(number)}
+                                                        className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${currentPage === number
+                                                                ? 'bg-black text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
+                                                                : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
+                                                            }`}
+                                                    >
+                                                        {number}
+                                                    </button>
+                                                ))}
+
+                                                <button
+                                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                                    disabled={currentPage === totalPages}
+                                                    className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
+                                                >
+                                                    <span className="sr-only">Next</span>
+                                                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                        <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+                                                    </svg>
+                                                </button>
+                                            </nav>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </>
                     ) : (
                         <div className="flex flex-col items-center justify-center h-96 bg-white rounded-lg border border-gray-100 shadow-sm border-dashed">
