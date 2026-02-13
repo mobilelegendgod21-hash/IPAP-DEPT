@@ -259,9 +259,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                     {/* Stats Cards - Only Separate Logic if needed, for now kept visible on all tabs or just Products/Overview */}
                     {/* ... stats ... */}
 
-                    {activeTab === 'ORDERS' ? (
-                        <AdminOrders />
-                    ) : (
+                    {activeTab === 'PRODUCTS' ? (
                         <>
                             {/* Stats Cards */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -278,12 +276,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                                 <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
                                     <div className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-2">Total Revenue</div>
                                     <div className="text-3xl font-black text-blue-600">
-                                        {/* This should ideally come from the 'admin_sales_stats' view or orders table aggregation */}
                                         ₱{products.reduce((acc, p) => acc + (p.price * (p.soldCount || 0)), 0).toLocaleString()}
-                                        {/* NOTE: Using soldCount * price as proxy for revenue since we don't have full order history in state yet.
-                                    The user asked to "replace total value into total sales". 
-                                    Real implementation would fetch from 'admin_sales_stats' view. 
-                                */}
                                     </div>
                                 </div>
                             </div>
@@ -354,6 +347,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                                 )}
                             </div>
                         </>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center h-96 bg-white rounded-lg border border-gray-100 shadow-sm border-dashed">
+                            <div className="p-4 bg-gray-50 rounded-full mb-4">
+                                <svg className="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                            </div>
+                            <h3 className="text-lg font-black italic text-gray-400 uppercase tracking-widest">Coming Soon</h3>
+                            <p className="text-gray-400 text-sm mt-2 font-medium">This module is under development.</p>
+                        </div>
                     )}
                 </div>
             </main >
