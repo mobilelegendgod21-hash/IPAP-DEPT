@@ -9,6 +9,28 @@ interface ProductDetailsProps {
 
 export const ProductDetails: React.FC<ProductDetailsProps> = ({ product, onBack }) => {
     const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
+    const [activeStatus, setActiveStatus] = useState('Active now');
+
+    // Simulate Facebook Page Activity
+    useEffect(() => {
+        const checkStatus = () => {
+            const now = new Date();
+            // Convert to PH Time (UTC+8) roughly for logic, though system time is usually local
+            const hour = now.getHours();
+            // Assume 8:00 AM to 10:00 PM is active
+            if (hour >= 8 && hour <= 22) {
+                setActiveStatus('Active now');
+            } else {
+                // Randomize slightly for realism
+                const mins = 5 + Math.floor(Math.random() * 10);
+                setActiveStatus(`Active ${mins}m ago`);
+            }
+        };
+
+        checkStatus();
+        const interval = setInterval(checkStatus, 60000); // Update every minute
+        return () => clearInterval(interval);
+    }, []);
 
     // Reset variant selection when product changes
     useEffect(() => {
@@ -107,7 +129,15 @@ Is this available?`;
                             </div>
                             <div>
                                 <h3 className="font-medium text-sm">IPAP DEPT</h3>
-                                <p className="text-xs text-gray-400">Active 5 minutes ago</p>
+                                <div className="flex items-center gap-1.5">
+                                    {activeStatus === 'Active now' && (
+                                        <span className="relative flex h-2 w-2">
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                        </span>
+                                    )}
+                                    <p className="text-xs text-gray-400">{activeStatus}</p>
+                                </div>
                             </div>
                         </div>
                         <a
