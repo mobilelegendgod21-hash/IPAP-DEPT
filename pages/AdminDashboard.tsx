@@ -189,51 +189,77 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
         setIsLogoutConfirmOpen(false);
     }
 
+    // Mobile Sidebar Handling
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth < 768) {
+                setSidebarOpen(false);
+            } else {
+                setSidebarOpen(true);
+            }
+        };
+
+        // Set initial state
+        handleResize();
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     return (
-        <div className="min-h-screen bg-gray-100 flex">
+        <div className="min-h-screen bg-gray-100 flex relative">
+            {/* Mobile Overlay */}
+            {sidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-30 md:hidden"
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
+
             {/* Sidebar */}
-            <aside className={`bg-black text-white ${sidebarOpen ? 'w-64' : 'w-20'} transition-all duration-300 flex flex-col fixed h-full z-30`}>
+            <aside className={`fixed inset-y-0 left-0 z-40 bg-black text-white transition-all duration-300 
+                ${sidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full md:translate-x-0 md:w-20'} flex flex-col h-full`}>
                 <div className="h-16 flex items-center justify-center border-b border-gray-800">
-                    <span className={`font-black italic tracking-tighter text-xl ${!sidebarOpen && 'hidden'}`}>IPAP ADMIN</span>
-                    <span className={`font-black italic tracking-tighter text-xl ${sidebarOpen && 'hidden'}`}>IA</span>
+                    <span className={`font-black italic tracking-tighter text-xl ${!sidebarOpen && 'md:hidden'}`}>IPAP ADMIN</span>
+                    <span className={`font-black italic tracking-tighter text-xl hidden ${!sidebarOpen && 'md:block'}`}>IA</span>
                 </div>
 
                 <nav className="flex-1 py-4 space-y-2 px-2">
                     <button
                         onClick={() => setActiveTab('PRODUCTS')}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded text-sm font-bold uppercase tracking-wider ${activeTab === 'PRODUCTS' ? 'bg-gray-900 text-white' : 'text-gray-400 hover:bg-gray-900'}`}>
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                        <span className={`${!sidebarOpen && 'hidden'}`}>Products</span>
+                        <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                        <span className={`${!sidebarOpen && 'md:hidden'}`}>Products</span>
                     </button>
                     <button
                         onClick={() => setActiveTab('ORDERS')}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded text-sm font-bold uppercase tracking-wider ${activeTab === 'ORDERS' ? 'bg-gray-900 text-white' : 'text-gray-400 hover:bg-gray-900'}`}>
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                        <span className={`${!sidebarOpen && 'hidden'}`}>Orders</span>
+                        <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                        <span className={`${!sidebarOpen && 'md:hidden'}`}>Orders</span>
                     </button>
                     <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-900 rounded text-sm font-bold uppercase tracking-wider text-gray-400">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                        <span className={`${!sidebarOpen && 'hidden'}`}>Customers</span>
+                        <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                        <span className={`${!sidebarOpen && 'md:hidden'}`}>Customers</span>
                     </button>
                 </nav>
 
                 <div className="p-4 border-t border-gray-800">
                     <button onClick={handleLogoutClick} className="w-full flex items-center gap-3 px-4 py-2 text-red-400 hover:text-red-300 transition-colors">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                        <span className={`text-sm font-bold uppercase ${!sidebarOpen && 'hidden'}`}>Logout</span>
+                        <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                        <span className={`text-sm font-bold uppercase ${!sidebarOpen && 'md:hidden'}`}>Logout</span>
                     </button>
                 </div>
             </aside>
 
             {/* Main Content */}
-            <main className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-20'}`}>
+            <main className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'md:ml-64' : 'md:ml-20'} min-w-0`}>
                 {/* Header */}
-                <header className="bg-white h-16 border-b border-gray-200 flex items-center justify-between px-8 sticky top-0 z-20">
+                <header className="bg-white h-16 border-b border-gray-200 flex items-center justify-between px-4 md:px-8 sticky top-0 z-20">
                     <div className="flex items-center gap-4">
-                        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-gray-500 hover:text-black">
+                        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-gray-500 hover:text-black focus:outline-none">
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                         </button>
-                        <h1 className="text-lg font-bold uppercase tracking-wide text-gray-800">Product Management</h1>
+                        <h1 className="text-lg font-bold uppercase tracking-wide text-gray-800 truncate">Product Management</h1>
                     </div>
                 </header>
 
