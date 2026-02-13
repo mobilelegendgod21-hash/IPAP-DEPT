@@ -51,6 +51,12 @@ ${product.name}
 Size: ${variant.size}
 Price: ₱${product.price.toLocaleString()}
 
+Product Image:
+${product.images[0]}
+
+Description:
+${product.description}
+
 Is this available?`;
 
         // Use m.me link for Messenger
