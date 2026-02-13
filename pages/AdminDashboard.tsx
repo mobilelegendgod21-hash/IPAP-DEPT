@@ -425,8 +425,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                                                         key={number}
                                                         onClick={() => setCurrentPage(number)}
                                                         className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${currentPage === number
-                                                                ? 'bg-black text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
-                                                                : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
+                                                            ? 'bg-black text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
+                                                            : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
                                                             }`}
                                                     >
                                                         {number}
@@ -477,7 +477,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                 isModalOpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsModalOpen(false)}></div>
-                        <div className="relative bg-white rounded-xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+                        <div className="relative bg-white rounded-xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
                             <div className="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
                                 <h3 className="text-lg font-black italic tracking-tight text-gray-900">{editingProduct ? 'EDIT PRODUCT' : 'NEW PRODUCT'}</h3>
                                 <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">✕</button>
