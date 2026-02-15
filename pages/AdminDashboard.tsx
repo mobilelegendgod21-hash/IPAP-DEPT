@@ -576,7 +576,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                                             {(() => {
                                                 let availableSizes: string[] = [];
                                                 if (formData.style === 'FITTED') {
-                                                    availableSizes = ['7', '7 1/8', '7 1/4', '7 3/8', '7 1/2', '7 5/8', '7 3/4', '7 7/8', '8'];
+                                                    availableSizes = ['7', '7 1/8', '7 1/4', '7 3/8', '7 1/2', '7 5/8', '7 3/4', '7 7/8', '8', 'OSF'];
                                                 } else if (['SNAPBACK', 'DAD_HAT', 'TRUCKER'].includes(formData.style)) {
                                                     availableSizes = ['OSF'];
                                                 } else { // APPAREL
