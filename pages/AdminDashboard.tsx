@@ -14,6 +14,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
     const [editingProduct, setEditingProduct] = useState<Partial<Product> | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
+    const [isSaveConfirmOpen, setIsSaveConfirmOpen] = useState(false);
+    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+    const [productToDelete, setProductToDelete] = useState<string | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
 
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [activeTab, setActiveTab] = useState<'PRODUCTS' | 'ORDERS' | 'CUSTOMERS'>('PRODUCTS');
@@ -24,7 +28,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
     // Filter Logic
     const filteredProducts = products.filter(p =>
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.id.toLowerCase().includes(searchQuery.toLowerCase())
+        p.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.style.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (p.status && p.status.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
     // Pagination Logic
@@ -49,7 +55,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
         shopName: 'IPAP Official',
         location: 'Makati City',
         sizes: [] as string[],
-        stocks: {} as Record<string, number>
+        stocks: {} as Record<string, number>,
+        status: 'ACTIVE'
     });
 
     const AVAILABLE_SIZES = ['S', 'M', 'L', 'XL', 'OSF'];
@@ -82,7 +89,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                 soldCount: p.sold_count,
                 shopName: p.shop_name,
                 releaseDate: p.release_date,
-                sizes: p.sizes || []
+                sizes: p.sizes || [],
+                status: p.status || 'ACTIVE'
             }));
             setProducts(mapped);
         }
@@ -90,14 +98,29 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
     };
 
 
-    const handleDelete = async (id: string) => {
-        if (!window.confirm('Are you sure you want to delete this product?')) return;
+    const handleDelete = (id: string) => {
+        setProductToDelete(id);
+        setIsDeleteConfirmOpen(true);
+    };
 
-        const { error } = await supabase.from('products').delete().eq('id', id);
-        if (error) {
-            alert(error.message);
-        } else {
-            fetchProducts();
+    const confirmDelete = async () => {
+        if (!productToDelete) return;
+        setIsSaving(true); // Reuse isSaving for loading state
+
+        try {
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            const { error } = await supabase.from('products').delete().eq('id', productToDelete);
+            if (error) {
+                alert(error.message);
+            } else {
+                fetchProducts();
+            }
+        } catch (err: any) {
+            alert(err.message);
+        } finally {
+            setIsSaving(false);
+            setIsDeleteConfirmOpen(false);
+            setProductToDelete(null);
         }
     };
 
@@ -113,7 +136,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
             shopName: product.shopName,
             location: product.location,
             sizes: product.sizes || [],
-            stocks: product.variants.reduce((acc, v) => ({ ...acc, [v.size]: v.stock }), {})
+            stocks: product.variants.reduce((acc, v) => ({ ...acc, [v.size]: v.stock }), {}),
+            status: product.status
         });
         setIsModalOpen(true);
     };
@@ -130,16 +154,21 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
             shopName: 'IPAP Official',
             location: '',
             sizes: [],
-            stocks: {}
+            stocks: {},
+            status: 'ACTIVE'
         });
         setIsModalOpen(true);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        const isNew = !editingProduct;
-
         if (!formData.name || !formData.price) return;
+        setIsSaveConfirmOpen(true);
+    };
+
+    const confirmSave = async () => {
+        setIsSaving(true);
+        const isNew = !editingProduct;
 
         const payload = {
             name: formData.name,
@@ -150,10 +179,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
             shop_name: formData.shopName,
             location: formData.location,
             sizes: formData.sizes,
+            status: formData.status,
             updated_at: new Date()
         };
 
         try {
+            // Simulate saving animation delay
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
             let productId = formData.id;
 
             if (isNew) {
@@ -192,10 +225,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                 }
             }
 
+            setIsSaveConfirmOpen(false);
             setIsModalOpen(false);
             fetchProducts();
         } catch (err: any) {
             alert(err.message);
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -472,6 +508,24 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                 message="Are you sure you want to log out from the Admin Panel?"
             />
 
+            <ConfirmationModal
+                isOpen={isSaveConfirmOpen}
+                onClose={() => setIsSaveConfirmOpen(false)}
+                onConfirm={confirmSave}
+                title={editingProduct ? "Save Changes?" : "Create Product?"}
+                message={editingProduct ? "Are you sure you want to save changes to this product?" : "Are you sure you want to add this new product to the catalog?"}
+                isLoading={isSaving}
+            />
+
+            <ConfirmationModal
+                isOpen={isDeleteConfirmOpen}
+                onClose={() => setIsDeleteConfirmOpen(false)}
+                onConfirm={confirmDelete}
+                title="Delete Product?"
+                message="This action cannot be undone. Are you sure you want to permanently remove this product?"
+                isLoading={isSaving}
+            />
+
             {/* Modal */}
             {
                 isModalOpen && (
@@ -493,6 +547,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
                                         <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Price (PHP)</label>
                                         <input type="number" required className="block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm p-2 border"
                                             value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Status</label>
+                                        <select className="block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black sm:text-sm p-2 border"
+                                            value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })}>
+                                            <option value="ACTIVE">ACTIVE</option>
+                                            <option value="ARCHIVED">ARCHIVED (HIDDEN)</option>
+                                            <option value="DRAFT">DRAFT</option>
+                                        </select>
                                     </div>
                                     <div>
                                         <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Style</label>

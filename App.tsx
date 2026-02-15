@@ -197,12 +197,6 @@ const App: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Search Bar Simulation */}
-              <div className="hidden md:flex items-center bg-gray-100 px-3 h-9 rounded w-64 mr-4">
-                <svg className="text-gray-400 w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <input type="text" placeholder="Search products..." className="bg-transparent text-sm w-full outline-none placeholder:text-gray-400" />
-              </div>
-
               {isLoggedIn && (
                 <>
                   <button onClick={() => setView('PROFILE')} className="text-sm font-medium text-gray-700 hover:text-gray-900 mr-2 max-w-[150px] truncate">

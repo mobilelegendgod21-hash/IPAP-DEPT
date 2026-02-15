@@ -16,13 +16,15 @@ export interface Product {
   variants: ProductVariant[];
   releaseDate: string;
   rating: number;
-  soldCount: number;
-  location: string;
-  shopName: string;
-  sizes?: string[];
+    soldCount: number;
+    location?: string;
+    shopName?: string;
+    releaseDate?: string;
+    sizes?: string[]; // Legacy array for quick size check
+    status: 'ACTIVE' | 'ARCHIVED' | 'DRAFT';
 }
 
-export interface CartItem {
+export interface ProductVariant {
   productId: string;
   variantId: string;
   name: string;

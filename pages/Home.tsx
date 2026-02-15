@@ -17,6 +17,7 @@ export const Home: React.FC<HomeProps> = ({ onProductClick }) => {
     useEffect(() => {
         const fetchProducts = async () => {
             try {
+                // Keep existing fetch logic...
                 const { data, error } = await supabase
                     .from('products')
                     .select('*, variants:product_variants(*)')
@@ -26,7 +27,6 @@ export const Home: React.FC<HomeProps> = ({ onProductClick }) => {
 
                 if (data) {
                     const mapped: Product[] = data.map((p: any) => {
-                        // Map variants from joined data
                         let variants = (p.variants || []).map((v: any) => ({
                             id: v.id,
                             size: v.size,
@@ -34,12 +34,11 @@ export const Home: React.FC<HomeProps> = ({ onProductClick }) => {
                             price: v.price_override || Number(p.price)
                         }));
 
-                        // Fallback for Products without Variants (Legacy or incomplete data)
                         if (variants.length === 0 && p.sizes && p.sizes.length > 0) {
                             variants = p.sizes.map((size: string) => ({
                                 id: `${p.id}_${size}_fallback`,
                                 size: size,
-                                stock: 100, // Default stock fallback
+                                stock: 100,
                                 price: Number(p.price)
                             }));
                         }
@@ -58,10 +57,17 @@ export const Home: React.FC<HomeProps> = ({ onProductClick }) => {
                             location: p.location,
                             shopName: p.shop_name,
                             releaseDate: p.release_date,
-                            sizes: variants.map((v: any) => v.size)
+                            sizes: variants.map((v: any) => v.size),
+                            status: p.status || 'ACTIVE'
                         };
                     });
-                    setProducts(mapped);
+                    
+                    const availableProducts = mapped.filter(p => {
+                        const totalStock = p.variants.reduce((acc, v) => acc + v.stock, 0);
+                        return p.status === 'ACTIVE' && totalStock > 0;
+                    });
+
+                    setProducts(availableProducts);
                 }
             } catch (err) {
                 console.error('Error fetching products:', err);
@@ -71,6 +77,23 @@ export const Home: React.FC<HomeProps> = ({ onProductClick }) => {
         };
 
         fetchProducts();
+
+        // 🟢 REALTIME SUBSCRIPTION
+        const channel = supabase
+            .channel('public:products') // Unique name for the channel
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
+                console.log('Product change detected! Refreshing...');
+                fetchProducts();
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'product_variants' }, () => {
+                console.log('Stock/Variant change detected! Refreshing...');
+                fetchProducts();
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, []);
 
     // Pagination Logic
