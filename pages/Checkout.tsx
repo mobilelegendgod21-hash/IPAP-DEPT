@@ -25,7 +25,7 @@ export const Checkout: React.FC<CheckoutProps> = ({ onBack, onSuccess }) => {
 
   if (selectedItems.length === 0) {
       return (
-          <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
+          <div className="flex-1 flex flex-col items-center justify-center bg-gray-50 p-4">
               <p className="mb-4 text-gray-500">No items selected for checkout.</p>
               <button onClick={onBack} className="text-black underline">Go Back</button>
           </div>
@@ -33,7 +33,7 @@ export const Checkout: React.FC<CheckoutProps> = ({ onBack, onSuccess }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 pb-24">
+    <div className="flex-1 bg-gray-100 pb-24">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-30">
         <div className="max-w-screen-md mx-auto px-4 h-14 flex items-center justify-between">

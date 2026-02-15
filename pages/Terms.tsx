@@ -2,7 +2,7 @@ import React from 'react';
 
 const Terms = ({ setView }: { setView: (view: string) => void }) => {
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center p-4">
+    <div className="flex-1 bg-gray-100 flex flex-col justify-center items-center p-4">
       <div className="w-full max-w-2xl">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-black italic tracking-tighter">Terms and Agreements</h1>

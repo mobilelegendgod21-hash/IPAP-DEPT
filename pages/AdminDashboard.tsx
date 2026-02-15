@@ -227,7 +227,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
     }, []);
 
     return (
-        <div className="min-h-screen bg-gray-100 flex relative">
+        <div className="flex-1 bg-gray-100 flex relative">
             {/* Mobile Overlay */}
             {sidebarOpen && (
                 <div

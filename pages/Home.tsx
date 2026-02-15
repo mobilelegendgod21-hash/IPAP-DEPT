@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Product } from '../types';
 import { supabase } from '../lib/supabase';
-import { Footer } from '../components/Footer';
 
 interface HomeProps {
     onProductClick: (product: Product) => void;
@@ -89,51 +88,67 @@ export const Home: React.FC<HomeProps> = ({ onProductClick }) => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 flex flex-col">
-            <div className="flex-1 pb-10">
+        <div className="flex-1 bg-white flex flex-col">
+            <div className="flex-1">
                 {/* Banner Carousel Simulation */}
-                {/* ... (Same Banner) ... */}
-                <div className="w-full bg-black text-white h-48 md:h-64 flex items-center justify-center relative overflow-hidden">
-                    <div className="text-center z-10 p-4">
-                        <h2 className="text-3xl md:text-5xl font-black italic tracking-tighter mb-2">SEASON DROP</h2>
-                        <p className="font-mono text-sm uppercase tracking-widest text-gray-300">Free shipping on all orders</p>
+                <div className="w-full bg-black text-white h-40 md:h-64 flex items-center justify-center relative overflow-hidden border-b border-gray-900">
+                    <div className="text-center z-10 p-4 relative">
+                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-px h-8 bg-white/20"></div>
+                        <h2 className="text-3xl md:text-6xl font-black italic tracking-tighter mb-3 leading-none">SEASON<br/>DROP</h2>
+                        <div className="flex items-center justify-center gap-3">
+                            <span className="w-1.5 h-1.5 bg-white rounded-full"></span>
+                            <p className="font-mono text-[10px] md:text-xs uppercase tracking-[0.2em] text-gray-400">Limited Edition Headwear</p>
+                            <span className="w-1.5 h-1.5 bg-white rounded-full"></span>
+                        </div>
                     </div>
-                    {/* Abstract Background */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-gray-900 to-gray-800 opacity-50"></div>
+                    {/* Technical Grid Background */}
+                    <div className="absolute inset-0 opacity-10" 
+                         style={{ 
+                             backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', 
+                             backgroundSize: '20px 20px' 
+                         }}>
+                    </div>
+                    
                 </div>
 
                 {/* Categories / Quick Links */}
-                {/* ... (Same Categories) ... */}
-                <div className="bg-white py-6 px-4 mb-4 shadow-sm overflow-x-auto">
-                    <div className="flex gap-6 min-w-max md:justify-center">
-                        {[
-                            { icon: '🧢', label: 'Fitted' },
-                            { icon: '🎩', label: 'Snapback' },
-                        ].map((cat, i) => (
-                            <div
-                                key={i}
-                                className="flex flex-col items-center gap-2 cursor-pointer hover:opacity-80 w-16"
-                            >
-                                <div className="w-12 h-12 bg-gray-50 border border-gray-100 rounded-xl flex items-center justify-center text-xl shadow-sm">
-                                    {cat.icon}
+                <div className="border-b border-gray-100 py-6 px-4 mb-8">
+                    <div className="max-w-screen-xl mx-auto">
+                        <div className="flex justify-center gap-8 md:gap-16">
+                            {[
+                                { icon: 'FITTED', label: 'IPAP FITTED' },
+                                { icon: 'SNAPBACK', label: 'IPAP SNAPBACK' },
+                                
+                            ].map((cat, i) => (
+                                <div
+                                    key={i}
+                                    className="group flex flex-col items-center gap-2 cursor-pointer"
+                                >
+                                    <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-50 border border-gray-200 group-hover:border-black group-hover:bg-black group-hover:text-white transition-all duration-300 flex items-center justify-center shadow-sm">
+                                        <span className="font-black italic text-xs md:text-sm tracking-tighter">{cat.icon}</span>
+                                    </div>
+                                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-gray-400 group-hover:text-black transition-colors">{cat.label}</span>
                                 </div>
-                                <span className="text-[10px] uppercase font-bold tracking-wide text-gray-600 text-center">{cat.label}</span>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
                 </div>
 
                 {/* Main Feed */}
-                <div className="px-2 md:px-4 max-w-screen-xl mx-auto mt-4">
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4">
-                        {loading && <div className="col-span-full text-center py-10">Loading...</div>}
+                <div className="px-2 md:px-8 max-w-screen-xl mx-auto mt-4 mb-16">
+                    <div className="flex items-center justify-between mb-6 border-b border-black pb-2">
+                        <h3 className="font-mono text-sm font-bold uppercase tracking-widest">Latest Arrivals</h3>
+                        <span className="font-mono text-xs text-gray-400">{products.length} ITEMS</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-y-8 gap-x-4">
+                        {loading && <div className="col-span-full text-center py-20 font-mono text-sm">LOADING_DATA...</div>}
 
                         {!loading && currentProducts.length === 0 && (
-                            <div className="col-span-full text-center py-20 text-gray-400">No products found.</div>
+                            <div className="col-span-full text-center py-20 text-gray-400 font-mono">NO_PRODUCTS_FOUND</div>
                         )}
 
                         {currentProducts.map((product) => {
-                            // ... (Same Product Card Rendering)
                             const discount = product.originalPrice
                                 ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
                                 : 0;
@@ -141,29 +156,42 @@ export const Home: React.FC<HomeProps> = ({ onProductClick }) => {
                             return (
                                 <div
                                     key={product.id}
-                                    className="bg-white rounded hover:shadow-md transition-shadow cursor-pointer overflow-hidden border border-gray-100 flex flex-col"
+                                    className="group cursor-pointer flex flex-col"
                                     onClick={() => onProductClick(product)}
                                 >
-                                    <div className="aspect-square bg-gray-100 relative">
-                                        <img src={product.images[0]} className="w-full h-full object-cover" loading="lazy" />
+                                    <div className="aspect-square bg-gray-100 relative overflow-hidden mb-3 border border-transparent group-hover:border-black transition-all duration-300">
+                                        <img 
+                                            src={product.images[0]} 
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                                            loading="lazy" 
+                                        />
                                         {discount > 0 && (
-                                            <div className="absolute top-2 right-2 bg-yellow-400 text-black text-[10px] font-bold px-1.5 py-0.5">
+                                            <div className="absolute top-0 right-0 bg-black text-white text-[10px] font-mono font-bold px-2 py-1">
                                                 -{discount}%
                                             </div>
                                         )}
+                                        {/* Overlay on hover */}
+                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300"></div>
                                     </div>
-                                    <div className="p-2 md:p-3 flex-1 flex flex-col">
-                                        <h3 className="text-xs md:text-sm font-medium line-clamp-2 mb-2 min-h-[2.5em]">{product.name}</h3>
+                                    
+                                    <div className="flex flex-col gap-1">
+                                        <h3 className="text-xs md:text-sm font-bold uppercase tracking-tight leading-snug line-clamp-2 min-h-[2.5em] group-hover:underline decoration-1 underline-offset-4">
+                                            {product.name}
+                                        </h3>
 
-                                        <div className="mt-auto">
-                                            <div className="flex flex-col md:flex-row md:items-baseline md:justify-between gap-1">
-                                                <div className="flex items-baseline gap-1">
-                                                    <span className="text-red-600 font-mono font-bold text-sm md:text-base">₱{product.price.toLocaleString()}</span>
+                                        <div className="flex items-center justify-between mt-1 border-t border-gray-100 pt-2">
+                                            <div className="flex flex-col">
+                                                <span className="font-mono text-xs text-gray-400 uppercase">Price</span>
+                                                <div className="flex items-baseline gap-2">
+                                                    <span className="font-mono font-bold text-sm md:text-base">₱{product.price.toLocaleString()}</span>
                                                     {product.originalPrice && (
-                                                        <span className="text-gray-400 text-[10px] line-through">₱{product.originalPrice.toLocaleString()}</span>
+                                                        <span className="text-gray-300 text-[10px] line-through decoration-gray-400 font-mono">₱{product.originalPrice.toLocaleString()}</span>
                                                     )}
                                                 </div>
-                                                <span className="text-[10px] text-gray-500">{product.soldCount} sold</span>
+                                            </div>
+                                            <div className="flex flex-col items-end">
+                                                <span className="font-mono text-xs text-gray-400 uppercase">Sold</span>
+                                                <span className="font-mono text-xs font-bold">{product.soldCount}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -198,8 +226,6 @@ export const Home: React.FC<HomeProps> = ({ onProductClick }) => {
                     )}
                 </div>
             </div>
-
-            <Footer />
         </div>
     );
 };

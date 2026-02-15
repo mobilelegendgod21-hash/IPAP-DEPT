@@ -13,9 +13,12 @@ import Registration from './pages/Registration';
 import AdminLogin from './pages/AdminLogin';
 import AdminRegistration from './pages/AdminRegistration';
 import AdminDashboard from './pages/AdminDashboard';
+import Terms from './pages/Terms';
+import { TechnicalDocs } from './pages/TechnicalDocs';
 import { ConfirmationModal } from './components/ConfirmationModal';
+import { Footer } from './components/Footer';
 
-type ViewState = 'HOME' | 'PRODUCT' | 'CHECKOUT' | 'SUCCESS' | 'LOGIN' | 'REGISTER' | 'PROFILE' | 'ADMIN_LOGIN' | 'ADMIN_REGISTER' | 'ADMIN_DASHBOARD';
+type ViewState = 'HOME' | 'PRODUCT' | 'CHECKOUT' | 'SUCCESS' | 'LOGIN' | 'REGISTER' | 'PROFILE' | 'ADMIN_LOGIN' | 'ADMIN_REGISTER' | 'ADMIN_DASHBOARD' | 'TERMS' | 'DOCS';
 
 const App: React.FC = () => {
   const [view, setView] = useState<ViewState>(() => {
@@ -159,9 +162,13 @@ const App: React.FC = () => {
         return <AdminRegistration setView={setView} />;
       case 'ADMIN_DASHBOARD':
         return <AdminDashboard setView={setView} />;
+      case 'TERMS':
+        return <Terms setView={setView} />;
+      case 'DOCS':
+        return <TechnicalDocs />;
       case 'SUCCESS':
         return (
-          <div className="min-h-screen flex flex-col items-center justify-center bg-white p-8 text-center">
+          <div className="flex-1 flex flex-col items-center justify-center bg-white p-8 text-center">
             <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6">
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
             </div>
@@ -178,9 +185,9 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white text-black selection:bg-black selection:text-white">
-      {/* Navigation (Only show on Home, Product, Profile) */}
-      {(view === 'HOME' || view === 'PRODUCT' || view === 'PROFILE') && (
+    <div className="min-h-screen w-full bg-white text-black selection:bg-black selection:text-white flex flex-col flex-1">
+      {/* Navigation (Only show on Home, Product, Profile, Terms, Docs) */}
+      {(view === 'HOME' || view === 'PRODUCT' || view === 'PROFILE' || view === 'TERMS' || view === 'DOCS') && (
         <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-gray-100 shadow-sm">
           <div className="max-w-screen-xl mx-auto px-4 h-16 flex items-center justify-between">
             <div className="flex items-center gap-6">
@@ -222,9 +229,13 @@ const App: React.FC = () => {
         </nav>
       )}
 
-      <main>
+      <main className="flex-1">
         {renderContent()}
       </main>
+
+      {(view === 'HOME' || view === 'PRODUCT' || view === 'PROFILE' || view === 'TERMS' || view === 'DOCS') && (
+        <Footer />
+      )}
 
       <CartDrawer onCheckout={handleCheckoutStart} />
 
