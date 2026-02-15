@@ -239,6 +239,31 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
         setIsLogoutConfirmOpen(true);
     }
 
+    const isFormDirty = () => {
+        if (!editingProduct) return true; // Always dirty for new products
+
+        const currentStocks = editingProduct.variants?.reduce((acc, v) => ({ ...acc, [v.size]: v.stock }), {}) || {};
+        
+        // Deep comparison
+        const hasBaseInfoChanged = 
+            formData.name !== editingProduct.name ||
+            formData.description !== editingProduct.description ||
+            parseFloat(formData.price) !== editingProduct.price ||
+            formData.style !== editingProduct.style ||
+            formData.status !== editingProduct.status ||
+            formData.shopName !== editingProduct.shopName ||
+            formData.location !== editingProduct.location ||
+            formData.imageUrl !== (editingProduct.images?.[0] || '');
+
+        const hasSizesChanged = 
+            JSON.stringify([...formData.sizes].sort()) !== JSON.stringify([...(editingProduct.sizes || [])].sort());
+
+        const hasStocksChanged = 
+            JSON.stringify(formData.stocks) !== JSON.stringify(currentStocks);
+
+        return hasBaseInfoChanged || hasSizesChanged || hasStocksChanged;
+    };
+
     const confirmLogout = async () => {
         await supabase.auth.signOut();
         setView('HOME');
@@ -275,9 +300,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
             {/* Sidebar */}
             <aside className={`fixed inset-y-0 left-0 z-40 bg-black text-white transition-all duration-300 
                 ${sidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full md:translate-x-0 md:w-20'} flex flex-col h-full`}>
-                <div className="h-16 flex items-center justify-center border-b border-gray-800">
+                <div className="h-16 flex items-center justify-center border-b border-gray-800 p-2">
                     <span className={`font-black italic tracking-tighter text-xl ${!sidebarOpen && 'md:hidden'}`}>IPAP ADMIN</span>
-                    <span className={`font-black italic tracking-tighter text-xl hidden ${!sidebarOpen && 'md:block'}`}>IA</span>
+                    <div className={`hidden ${!sidebarOpen && 'md:block'} w-10 h-10 rounded-full overflow-hidden border border-gray-700`}>
+                        <img src="/ipap-new.jpg" alt="Logo" className="w-full h-full object-cover" />
+                    </div>
                 </div>
 
                 <nav className="flex-1 py-4 space-y-2 px-2">
@@ -707,7 +734,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
 
                                 <div className="pt-4 flex justify-end gap-3">
                                     <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-bold uppercase rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200">Cancel</button>
-                                    <button type="submit" className="px-4 py-2 text-sm font-bold uppercase rounded-md text-white bg-black hover:bg-gray-800">
+                                    <button 
+                                        type="submit" 
+                                        disabled={editingProduct ? !isFormDirty() : (!formData.name || !formData.price)}
+                                        className="px-4 py-2 text-sm font-bold uppercase rounded-md text-white bg-black hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-opacity"
+                                    >
                                         {editingProduct ? 'Save Changes' : 'Create Product'}
                                     </button>
                                 </div>
